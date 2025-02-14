@@ -31,10 +31,18 @@ public class myDemo extends JFrame{
 		JButton rise = new JButton("Rise");
 		JButton lower = new JButton("Lower");
 		JButton land = new JButton("Land");
+		JButton forward = new JButton("Foward");
+		JButton back = new JButton("Back");
+		JButton right = new JButton("Right");
+		JButton left = new JButton("Left");
 		
-		frame.getContentPane().add(BorderLayout.EAST, rise);
-		frame.getContentPane().add(BorderLayout.WEST, lower);
+		//frame.getContentPane().add(BorderLayout.EAST, rise);
+		//frame.getContentPane().add(BorderLayout.WEST, lower);
 		frame.getContentPane().add(BorderLayout.CENTER, land);
+		frame.getContentPane().add(BorderLayout.NORTH, forward);
+		frame.getContentPane().add(BorderLayout.SOUTH, back);
+		frame.getContentPane().add(BorderLayout.EAST, right);
+		frame.getContentPane().add(BorderLayout.WEST, left);
 		
 		frame.setVisible(true);
 		
@@ -49,6 +57,7 @@ public class myDemo extends JFrame{
 			telloControl.connect();
 			
 			telloControl.enterCommandMode();
+			telloControl.takeOff();
 			
 			// Should be able to give it commands to fly now?
 			
@@ -83,6 +92,30 @@ public class myDemo extends JFrame{
 		land.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				telloControl.land();
+			}
+		});
+		
+		forward.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				telloControl.forward(50);
+			}
+		});
+		
+		back.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				telloControl.backward(50);
+			}
+		});
+		
+		left.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				telloControl.left(50);
+			}
+		});
+		
+		right.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				telloControl.right(50);
 			}
 		});
 		
