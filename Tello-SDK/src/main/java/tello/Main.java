@@ -36,7 +36,7 @@ public class Main
 	    
 	    // Create an instance of the drone program (class) we want to run.
 	    
-	    Demo1 demo = new Demo1();
+//	    Demo1 demo = new Demo1();
 
 //		Demo2 demo = new Demo2();
 
@@ -45,6 +45,8 @@ public class Main
 //	    Demo4 demo = new Demo4();
 
 //	    Demo5 demo = new Demo5();
+	    
+	    myDemo demo = new myDemo();
 	    
 //	    FlySquare demo = new FlySquare();
 
