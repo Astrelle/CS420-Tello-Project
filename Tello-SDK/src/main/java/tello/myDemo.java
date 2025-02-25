@@ -1,15 +1,17 @@
 package tello;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
-import tellolib.command.TelloFlip;
 import tellolib.communication.TelloConnection;
 import tellolib.control.TelloControl;
 import tellolib.drone.TelloDrone;
@@ -19,15 +21,19 @@ public class myDemo extends JFrame{
 	private static final long serialVersionUID = 1L;
 	private JFrame frame;
 	
+        @SuppressWarnings("NonConstantLogger")
 	private final Logger logger = Logger.getGlobal();
 	
-	public void execute() {
+        @SuppressWarnings({"CallToPrintStackTrace", "Convert2Lambda"})
+	public void execute() { // method for executing the demo
 		
+		// sets the Jframe attributes
 		frame = new JFrame("Controls");
 		frame.setVisible(true);
 		frame.setSize(600,400);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		//control buttons
 		JButton rise = new JButton("Rise");
 		JButton lower = new JButton("Lower");
 		JButton land = new JButton("Land");
@@ -36,8 +42,9 @@ public class myDemo extends JFrame{
 		JButton right = new JButton("Right");
 		JButton left = new JButton("Left");
 		
-		//frame.getContentPane().add(BorderLayout.EAST, rise);
-		//frame.getContentPane().add(BorderLayout.WEST, lower);
+		// adds buttons to the Jframe
+		frame.getContentPane().add(BorderLayout.EAST, rise);
+		frame.getContentPane().add(BorderLayout.WEST, lower);
 		frame.getContentPane().add(BorderLayout.CENTER, land);
 		frame.getContentPane().add(BorderLayout.NORTH, forward);
 		frame.getContentPane().add(BorderLayout.SOUTH, back);
@@ -76,47 +83,47 @@ public class myDemo extends JFrame{
 		//ActionListeners don't crash but say connection is closed so should be good!
 		
 		// Exception in thread "AWT-EventQueue-0" tellolib.exception.TelloConnectionException: Socket closed
-		rise.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				telloControl.up(50);
-			}
+		rise.addMouseListener(new MouseAdapter() { //moves drone up when pressed, stops when released
+			@Override public void mousePressed(MouseEvent e) { telloControl.up(50); }
+			@Override public void mouseReleased(MouseEvent e) { telloControl.stop(); }
 		});
 		
 		// Exception in thread "AWT-EventQueue-0" tellolib.exception.TelloConnectionException: Socket closed 
-		lower.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				telloControl.down(50);
-			}
+		lower.addMouseListener(new MouseAdapter() { //moves dron down when pressed, stops when released
+			@Override public void mousePressed(MouseEvent e) { telloControl.down(50); }
+			@Override public void mouseReleased(MouseEvent e) { telloControl.stop(); }
 		});
 		
-		land.addActionListener(new ActionListener() {
+		// lands drone
+		land.addActionListener(new ActionListener() { 
+                        @SuppressWarnings("override")
 			public void actionPerformed(ActionEvent e) {
 				telloControl.land();
 			}
 		});
 		
-		forward.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				telloControl.forward(50);
-			}
+		//moves drone forward when pressed, stops when released
+		forward.addMouseListener(new MouseAdapter() { 
+			@Override public void mousePressed(MouseEvent e) { telloControl.forward(50); }
+			@Override public void mouseReleased(MouseEvent e) { telloControl.stop(); }
 		});
 		
-		back.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				telloControl.backward(50);
-			}
+		//moves drone backward when pressed, stops when released
+		back.addMouseListener(new MouseAdapter() {
+			@Override public void mousePressed(MouseEvent e) { telloControl.backward(50); }
+			@Override public void mouseReleased(MouseEvent e) { telloControl.stop(); }
 		});
 		
-		left.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				telloControl.left(50);
-			}
+		//moves drone left when pressed, stops when released
+		left.addMouseListener(new MouseAdapter() {
+			@Override public void mousePressed(MouseEvent e) { telloControl.left(50); }
+			@Override public void mouseReleased(MouseEvent e) { telloControl.stop(); }
 		});
 		
-		right.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				telloControl.right(50);
-			}
+		//moves drone right when pressed, stops when released
+		right.addMouseListener(new MouseAdapter() {
+			@Override public void mousePressed(MouseEvent e) { telloControl.right(50); }
+			@Override public void mouseReleased(MouseEvent e) { telloControl.stop(); }
 		});
 		
 		logger.info("end");
