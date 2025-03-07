@@ -20,6 +20,9 @@ import javax.swing.JPanel;
 import tellolib.communication.TelloConnection;
 import tellolib.control.TelloControl;
 import tellolib.drone.TelloDrone;
+import tellolib.camera.TelloCamera;
+import tellolib.camera.FaceDetection;
+import tellolib.command.TelloFlip;
 
 public class myDemo extends JFrame 
 {
@@ -27,6 +30,7 @@ public class myDemo extends JFrame
     private static final long serialVersionUID = 1L;
     private JFrame frame;
     private final Logger logger = Logger.getGlobal();
+    private TelloCamera			camera;
 
     public void execute() 
 	{
@@ -43,6 +47,7 @@ public class myDemo extends JFrame
         JButton back = new JButton("Back");
         JButton right = new JButton("Right");
         JButton left = new JButton("Left");
+        JButton picture = new JButton("Picture");
 
         //JPANEL GAPS AND SHIT
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
@@ -55,7 +60,7 @@ public class myDemo extends JFrame
         //FOUR PANELS ARE EMPTY FROM HERE, YOU CAN CHANGE. THEY HAVE EMPTY TEXTS FOR CHANGING
         JPanel directionalPanel = new JPanel(new GridLayout(3, 3, 5, 5));
 
-        directionalPanel.add(new JLabel("")); //EMPTY TOP LEFT
+        directionalPanel.add(picture); //EMPTY TOP LEFT
         directionalPanel.add(forward);
         directionalPanel.add(new JLabel("")); //FILL IT TOP RIGHT
 
@@ -159,6 +164,15 @@ public class myDemo extends JFrame
             public void mousePressed(MouseEvent e) { telloControl.right(50); }
             @Override
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
+        });
+
+        //Big image gaming?????
+        picture.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) 
+            {
+                camera.takePicture(System.getProperty("user.dir") + "\\Photos");
+            }; 
         });
 
         logger.info("end");
