@@ -4,7 +4,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
+import java.io.File;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -30,8 +30,9 @@ public class myDemo extends JFrame
     private static final long serialVersionUID = 1L;
     private JFrame frame;
     private final Logger logger = Logger.getGlobal();
-    private TelloCamera			camera;
-
+    private TelloCamera	camera;
+	
+	
     public void execute() 
 	{
         //KILLING MYSELF
@@ -86,12 +87,16 @@ public class myDemo extends JFrame
         TelloControl telloControl = TelloControl.getInstance();
         TelloDrone drone = TelloDrone.getInstance();
         telloControl.setLogLevel(Level.FINE);
+		camera = TelloCamera.getInstance();
 
         try 
 		{
             telloControl.connect();
             telloControl.enterCommandMode();
             telloControl.takeOff();
+            telloControl.streamOn();
+
+			camera.startVideoCapture(true);  
         } 
 		catch (Exception e) 
 		{
@@ -171,7 +176,7 @@ public class myDemo extends JFrame
             @Override
             public void mousePressed(MouseEvent e) 
             {
-                camera.takePicture(System.getProperty("user.dir") + "\\Photos");
+                camera.takePicture(System.getProperty("user.dir") + "\\Photos"); //This sends it to Tello-Sdk/Photos. Check there. 
             }; 
         });
 
