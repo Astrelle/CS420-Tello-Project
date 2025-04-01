@@ -26,30 +26,23 @@ public class movementMap extends JPanel {
     }
 
     public void moveUp() {
-        System.out.println("Moving Up: " + y);
-        revalidate();
-        y -= 10;
+        y = Math.max(0, y - 10);  // Prevents out-of-bounds movement
         repaint();
     }
     
     public void moveDown() {
-        System.out.println("Moving Down: " + y);
-        revalidate();
-        y += 10;
+        y = Math.min(sizeY, y + 10);
         repaint();
     }
     
     public void moveLeft() {
-        System.out.println("Moving Left: " + x);
-        revalidate();
-        x -= 10;
+        x = Math.max(0, x - 10);
         repaint();
     }
     
     public void moveRight() {
-        System.out.println("Moving Right: " + x);
-        revalidate();
-        x += 10;
+        x = Math.min(sizeX, x + 10);
         repaint();
     }
+    
 }    

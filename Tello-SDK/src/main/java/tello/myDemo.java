@@ -17,12 +17,12 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import tellolib.communication.TelloConnection;
-import tellolib.control.TelloControl;
-import tellolib.drone.TelloDrone;
-import tellolib.camera.TelloCamera;
-import tellolib.camera.FaceDetection;
-import tellolib.command.TelloFlip;
+//import tellolib.communication.TelloConnection;
+//import tellolib.control.TelloControl;
+//import tellolib.drone.TelloDrone;
+//import tellolib.camera.TelloCamera;
+//import tellolib.camera.FaceDetection;
+//import tellolib.command.TelloFlip;
 
 public class myDemo extends JFrame 
 {
@@ -30,7 +30,7 @@ public class myDemo extends JFrame
     private static final long serialVersionUID = 1L;
     private JFrame frame;
     private final Logger logger = Logger.getGlobal();
-    private TelloCamera	camera;
+//    private TelloCamera	camera;
     private JFrame mapFrame; // <-the map in question
     private movementMap mapPanel;
 	
@@ -96,7 +96,8 @@ public class myDemo extends JFrame
         logger.info("start");
 
         //TELLO CONTROLS
-        System.load("C:\\Users\\medic\\OneDrive\\Documents\\GitHub\\CS420-Tello-Project\\Tello-SDK\\opencv-x64\\opencv_java420.dll"); //Make the shit work by force, comment out this line or replace the file path with your
+
+/*        //System.load("C:\\Users\\medic\\OneDrive\\Documents\\GitHub\\CS420-Tello-Project\\Tello-SDK\\opencv-x64\\opencv_java420.dll"); //Make the shit work by force, comment out this line or replace the file path with your
         TelloControl telloControl = TelloControl.getInstance();
         TelloDrone drone = TelloDrone.getInstance();
         telloControl.setLogLevel(Level.FINE);
@@ -128,61 +129,61 @@ public class myDemo extends JFrame
                 }
             }
         }
-
+*/
         //THE VOICES LISTEN
 
         //RISE MY GLORIOUS CREATION
         rise.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { telloControl.up(50); }
+            public void mousePressed(MouseEvent e) { /*telloControl.up(50);*/ }
             @Override
-            public void mouseReleased(MouseEvent e) { telloControl.stop(); }
+            public void mouseReleased(MouseEvent e) { /*telloControl.stop();*/ }
         });
 
         //KEEP YOUR HEAD DOWN, LOWER
         lower.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { telloControl.down(50); }
+            public void mousePressed(MouseEvent e) { /*telloControl.down(50);*/ }
             @Override
-            public void mouseReleased(MouseEvent e) { telloControl.stop(); }
+            public void mouseReleased(MouseEvent e) { /*telloControl.stop();*/ }
         });
 
         //GET BACK HERE AND LAND
         land.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) { telloControl.land(); }
+            public void actionPerformed(ActionEvent e) { /*telloControl.land();*/ }
         });
 
         //FORWARD FOR THE HUNT
         forward.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { telloControl.forward(50); mapPanel.moveUp(); }
+            public void mousePressed(MouseEvent e) {System.out.println("moving foward"); /*telloControl.forward(50);*/ mapPanel.moveUp(); }
             @Override
-            public void mouseReleased(MouseEvent e) { telloControl.stop(); }
+            public void mouseReleased(MouseEvent e) { /*telloControl.stop();*/ }
         });
 
         //BACK UP THAT ASS
         back.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { telloControl.backward(50); mapPanel.moveDown();}
+            public void mousePressed(MouseEvent e) {System.out.println("moving back"); /*telloControl.backward(50);*/ mapPanel.moveDown();}
             @Override
-            public void mouseReleased(MouseEvent e) { telloControl.stop(); }
+            public void mouseReleased(MouseEvent e) { /*telloControl.stop();*/ }
         });
 
         //SWIPE LEFT UGLY BITCH
         left.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { telloControl.left(50); mapPanel.moveLeft();}
+            public void mousePressed(MouseEvent e) {System.out.println("moving left"); /*telloControl.left(50);*/ mapPanel.moveLeft();}
             @Override
-            public void mouseReleased(MouseEvent e) { telloControl.stop(); }
+            public void mouseReleased(MouseEvent e) { /*telloControl.stop();*/ }
         });
 
         //SWIPE RIGHT ON MOMMY
         right.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { System.out.println("moving right"); telloControl.right(50); mapPanel.moveRight(); }
+            public void mousePressed(MouseEvent e) {System.out.println("moving right"); /*telloControl.right(50);*/ mapPanel.moveRight(); }
             @Override
-            public void mouseReleased(MouseEvent e) { telloControl.stop(); }
+            public void mouseReleased(MouseEvent e) { /*telloControl.stop();*/ }
         });
 
         //Big image gaming?????
@@ -190,7 +191,7 @@ public class myDemo extends JFrame
             @Override
             public void mousePressed(MouseEvent e) 
             {
-                camera.takePicture(System.getProperty("user.dir") + "\\Photos"); //This sends it to Tello-Sdk/Photos. Check there. 
+//                camera.takePicture(System.getProperty("user.dir") + "\\Photos"); //This sends it to Tello-Sdk/Photos. Check there. 
             }; 
         });
 
