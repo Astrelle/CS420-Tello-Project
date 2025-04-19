@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -176,7 +177,16 @@ public class myDemo extends JFrame
             @Override
             public void mousePressed(MouseEvent e) 
             {
-                camera.takePicture(System.getProperty("user.dir") + "\\Photos"); //This sends it to Tello-Sdk/Photos. Check there. 
+                camera.takePicture(System.getProperty("user.dir") + "\\Photos"); //This sends it to Tello-Sdk/Photos. Check there.
+                ProcessBuilder pb = new ProcessBuilder("python", "src/main/python/parkingSpots.py");
+                pb.directory(new File(System.getProperty("user.dir")));
+                pb.inheritIO();
+                try {
+					Process process = pb.start();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
             }; 
         });
 
