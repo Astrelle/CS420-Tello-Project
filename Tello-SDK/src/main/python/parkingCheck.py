@@ -1,11 +1,16 @@
 import cv2
 import pickle
+import os
 import numpy
 
-capture = cv2.VideoCapture('parking1.mp4')
+script_dir_fix = os.path.dirname(os.path.abspath(__file__))
+file_path_fix_spots = os.path.join(script_dir_fix, "parkingSpots")
+testVideo_dir_fix = os.path.join(script_dir_fix, "parking1.mp4")
+
+capture = cv2.VideoCapture(testVideo_dir_fix)
 spotsList = []
 
-with open('parkingSpots', 'rb') as f:
+with open(file_path_fix_spots, 'rb') as f:
 	spotsList = pickle.load(f)
 
 width, height = 60, 100
