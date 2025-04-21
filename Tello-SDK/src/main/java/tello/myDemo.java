@@ -1,26 +1,18 @@
 package tello;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.event.*;
+import java.io.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
-// These are for socket video streaming to process the images
+import java.net.ServerSocket;
+import java.net.Socket;
+
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -31,19 +23,21 @@ import tellolib.drone.TelloDrone;
 import tellolib.camera.TelloCamera;
 import tellolib.command.TelloFlip;
 
-public class myDemo extends JFrame {
-
+public class myDemo extends JFrame 
+{
     private static final long serialVersionUID = 1L;
     private JFrame frame;
     private final Logger logger = Logger.getGlobal();
     private TelloCamera camera;
-    private JFrame mapFrame; // <-the map in question
+    private JLabel videoLabel = new JLabel(); // NEW: label to show video frames
+    private JFrame mapFrame;
     private movementMap mapPanel;
 
-    public void execute() {
+    public void execute() 
+    {
         //KILLING MYSELF
         frame = new JFrame("Pilot Controls");
-        frame.setSize(600, 400);
+        frame.setSize(960, 720); // fits the videoLabel nicely
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //FUUUUUUUUUUUCK
@@ -56,17 +50,18 @@ public class myDemo extends JFrame {
         JButton left = new JButton("Left");
         JButton picture = new JButton("Picture");
 
-         //when the map uh... the uhhhh...
-         mapPanel = new movementMap();
-         mapFrame = new JFrame("Drone Tracker");
-         mapFrame.setSize(500, 500);
-         mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-         mapFrame.add(mapPanel);
-         mapFrame.pack();
-         mapFrame.setVisible(true);
-         System.out.println("map init");
+        // when the map uh... the uhhhh...
+        mapPanel = new movementMap();
+        mapFrame = new JFrame("Drone Tracker");
+        mapFrame.setSize(500, 500);
+        mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        mapFrame.add(mapPanel);
+        mapFrame.pack();
+        mapFrame.setVisible(true);
+        System.out.println("map init");
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+
         JPanel altitudePanel = new JPanel(new FlowLayout());
         altitudePanel.add(rise);
         altitudePanel.add(lower);
@@ -84,6 +79,7 @@ public class myDemo extends JFrame {
 
         mainPanel.add(altitudePanel, BorderLayout.NORTH);
         mainPanel.add(directionalPanel, BorderLayout.CENTER);
+        mainPanel.add(videoLabel, BorderLayout.SOUTH); // add video label to bottom
 
         frame.add(mainPanel);
         frame.setVisible(true);
@@ -98,42 +94,49 @@ public class myDemo extends JFrame {
         try {
             telloControl.connect();
             telloControl.enterCommandMode();
-            telloControl.takeOff();
+            System.out.println("Command mode successful"); 
+
             telloControl.streamOn();
+            Thread.sleep(2000); // Allow stream to stabilize
+
             camera.startVideoCapture(true);
 
-            // Starts a thread in the background for socket video streaming
+            // Socket thread for video streaming
             new Thread(() -> {
                 try {
-                    // Creates a socket server that listens for connections on port 9999
-                    ServerSocket serverSocket = new ServerSocket(9999);
-                    System.out.println("Waiting for client connection on port 9999...");
+                    // Create a server socket that waits for a Python client to connect on port 9997
+                    ServerSocket serverSocket = new ServerSocket(9997); 
+                    System.out.println("Waiting for Python client on port 9997...");
+                    Socket clientSocket = serverSocket.accept(); 
+                    System.out.println("Python client connected!");
 
-                    // This waits until DroneVideoViewer connects
-                    Socket clientSocket = serverSocket.accept();
-                    System.out.println("Client connected!");
-
-                    // This sets up a stream to send data to DroneVideoViewer
+                    // Creates a stream to send image data through the socket to the python client
                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 
-                    // Loop that continously sends video frames
+                    // This continuously takes video frames and send them to the Python client
                     while (true) {
-                        // uses OpenCV Mat to get the newest video frames
-                        Mat frameToRead = camera.getImage();
-                        if (frameToRead != null) {
-                            // This changes the Mat image into a jpg byte array
+                        Mat frameMat = camera.getImage(); // Gets the current frame from the drone camera
+                        if (frameMat != null && !frameMat.empty()) {
+                            // Encode the frame into JPEG format and turns it into a byte array
                             MatOfByte buffer = new MatOfByte();
-                            Imgcodecs.imencode(".jpg", frameToRead, buffer);
+                            Imgcodecs.imencode(".jpg", frameMat, buffer);
                             byte[] byteArray = buffer.toArray();
 
-                            //Sends length of data for the DroneVideoVIewer and sends byte array to it
+                            // Send the length of the byte array and the data itself
                             out.writeInt(byteArray.length);
                             out.write(byteArray);
+
+                            // Convert the current OpenCV frame to a BufferedImage and display it in the GUI
+                            BufferedImage image = matToBufferedImage(frameMat);
+                            // Updates the live feed
+                            if (image != null) {
+                                videoLabel.setIcon(new ImageIcon(image));
+                            }
                         }
-                        // has mercy on the CPU just in case
-                        Thread.sleep(100);
+
+                        Thread.sleep(100); // This delay is to reduce CPU usage
                     }
-                } catch (IOException | InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }).start();
@@ -143,14 +146,14 @@ public class myDemo extends JFrame {
         } finally {
             if (telloControl.getConnection() == TelloConnection.CONNECTED && drone.isFlying()) {
                 try {
-                    // optional: cleanup
+                    telloControl.land();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        ///RISE MY GLORIOUS CREATION
+        //RISE MY GLORIOUS CREATION
         rise.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) { telloControl.up(50); }
@@ -183,7 +186,7 @@ public class myDemo extends JFrame {
         //BACK UP THAT ASS
         back.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { telloControl.backward(50); mapPanel.moveDown();}
+            public void mousePressed(MouseEvent e) { telloControl.backward(50); mapPanel.moveDown(); }
             @Override
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
@@ -191,7 +194,7 @@ public class myDemo extends JFrame {
         //SWIPE LEFT UGLY BITCH
         left.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { telloControl.left(50); mapPanel.moveLeft();}
+            public void mousePressed(MouseEvent e) { telloControl.left(50); mapPanel.moveLeft(); }
             @Override
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
@@ -209,19 +212,46 @@ public class myDemo extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) 
             {
-                camera.takePicture(System.getProperty("user.dir") + "\\Photos"); //This sends it to Tello-Sdk/Photos. Check there.
-                ProcessBuilder pb = new ProcessBuilder("python", "src/main/python/parkingSpots.py");
+                camera.takePicture(System.getProperty("user.dir") + "\\Photos");
+                ProcessBuilder pb = new ProcessBuilder("python", "src/main/python/ParkingSpots.py");
                 pb.directory(new File(System.getProperty("user.dir")));
                 pb.inheritIO();
                 try {
-					Process process = pb.start();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-            }; 
+                    pb.start();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
         });
 
         logger.info("end");
+    }
+
+    // Converts OpenCV Mat to BufferedImage for displaying
+    private BufferedImage matToBufferedImage(Mat mat) {
+        // Makes sure that the frame is not empty
+        if (mat == null || mat.empty()) {
+            System.out.println("Skipped frame: mat was null or empty."); 
+            return null;
+        }
+
+        // Encode the Mat into JPEG format and store it in a MatOfByte
+        MatOfByte mob = new MatOfByte();
+        boolean success = Imgcodecs.imencode(".jpg", mat, mob);
+        if (!success) {
+            System.out.println("Failed to encode Mat to JPEG."); 
+            return null;
+        }
+
+        // Convert the encoded image to a byte array
+        byte[] byteArray = mob.toArray();
+
+        // Decode the byte array into a BufferedImage using ImageIO
+        try {
+            return ImageIO.read(new ByteArrayInputStream(byteArray));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
