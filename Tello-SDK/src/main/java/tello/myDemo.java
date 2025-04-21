@@ -48,6 +48,10 @@ public class myDemo extends JFrame
         JButton left = new JButton("Left");
         JButton picture = new JButton("Picture");
 
+        // buttons to launch parkingCheck in either mode
+        JButton launchFileMode = new JButton("Launch (File)");
+        JButton launchSocketMode = new JButton("Launch (Socket)");
+
          // Create a map panel and frame for the map
          mapPanel = new movementMap();
          mapFrame = new JFrame("Drone Tracker");
@@ -64,7 +68,8 @@ public class myDemo extends JFrame
         altitudePanel.add(rise);
         altitudePanel.add(lower);
 
-        JPanel directionalPanel = new JPanel(new GridLayout(3, 3, 5, 5));
+        JPanel directionalPanel = new JPanel(new GridLayout(4, 3, 5, 5)); // changed to 4 rows for buttons
+
         directionalPanel.add(picture);
         directionalPanel.add(forward);
         directionalPanel.add(new JLabel(""));
@@ -74,10 +79,12 @@ public class myDemo extends JFrame
         directionalPanel.add(new JLabel(""));
         directionalPanel.add(back);
         directionalPanel.add(new JLabel(""));
+        directionalPanel.add(launchFileMode);
+        directionalPanel.add(new JLabel(""));
+        directionalPanel.add(launchSocketMode);
 
         mainPanel.add(altitudePanel, BorderLayout.NORTH);
         mainPanel.add(directionalPanel, BorderLayout.CENTER);
-        mainPanel.add(videoLabel, BorderLayout.SOUTH); // add video label to bottom
 
         frame.add(mainPanel);
         frame.setVisible(true);
@@ -102,9 +109,9 @@ public class myDemo extends JFrame
             // Socket thread for video streaming
             new Thread(() -> {
                 try {
-                    // Creates a socket server that listens for connections on port 9999
-                    ServerSocket serverSocket = new ServerSocket(9999);
-                    System.out.println("Waiting for client connection on port 9999...");
+                    // Creates a socket server that listens for connections on port 9997
+                    ServerSocket serverSocket = new ServerSocket(9997);
+                    System.out.println("Waiting for client connection on port 9997...");
 
                     // waits until DroneVideoViewer connects
                     Socket clientSocket = serverSocket.accept();
@@ -120,10 +127,9 @@ public class myDemo extends JFrame
                         if (frameToRead != null) {
                             
                             MatOfByte buffer = new MatOfByte();
-                            Imgcodecs.imencode(".jpg", frameMat, buffer);
+                            Imgcodecs.imencode(".jpg", frameToRead, buffer);
                             byte[] byteArray = buffer.toArray();
 
-                            
                             out.writeInt(byteArray.length);
                             out.write(byteArray);
                         }
@@ -211,11 +217,35 @@ public class myDemo extends JFrame
                 pb.directory(new File(System.getProperty("user.dir")));
                 pb.inheritIO();
                 try {
-					Process process = pb.start();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+                    Process process = pb.start();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }; 
+        });
+
+        // Launches video file processing
+        launchFileMode.addActionListener(e -> {
+            try {
+                ProcessBuilder pb = new ProcessBuilder("python", "src/main/python/parkingCheckFile.py");
+                pb.directory(new File(System.getProperty("user.dir")));
+                pb.inheritIO();
+                pb.start();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        // Launches socket based video analysis
+        launchSocketMode.addActionListener(e -> {
+            try {
+                ProcessBuilder pb = new ProcessBuilder("python", "src/main/python/parkingCheck.py");
+                pb.directory(new File(System.getProperty("user.dir")));
+                pb.inheritIO();
+                pb.start();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         });
 
         logger.info("end");

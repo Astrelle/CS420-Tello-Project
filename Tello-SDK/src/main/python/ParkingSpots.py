@@ -1,54 +1,57 @@
 import cv2
 import pickle
 import os
-import subprocess
+import tkinter as tk
+from tkinter import messagebox
 
 width, height = 60, 100
 spotsList = []
 
-script_dir_fix = os.path.dirname(os.path.abspath(__file__))
-file_path_fix_spots = os.path.join(script_dir_fix, "parkingSpots")
-file_path_fix_empty = os.path.join(script_dir_fix, "parkingLotEmpty.png")
+# Use absolute path to locate the ParkingSpots file relative to the script's directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+spots_path = os.path.join(script_dir, 'ParkingSpots')
 
-# load the predefined parking spot positions from file
-with open(file_path_fix_spots, 'rb') as f:
-	spotsList = pickle.load(f)
+# Load existing spot list if the file exists
+if os.path.exists(spots_path):
+    with open(spots_path, 'rb') as f:
+        spotsList = pickle.load(f)
+
+# GUI prompt to ask user which image to use
+root = tk.Tk()
+root.withdraw()  # Hide main Tk window
+
+choice = messagebox.askquestion("Select Image Source", "Use latest drone picture?")
+
+if choice == 'yes':
+    img_path = os.path.join(script_dir, 'latest.jpg') 
+else:
+    img_path = os.path.join(script_dir, 'parkingLotEmpty.png')
 
 
-def mouseClick(events,x,y,flags,params):
-	if events == cv2.EVENT_LBUTTONDOWN:
-		spotsList.append((x,y))
-		# Find and remove any spot covering this point
-	if events == cv2.EVENT_RBUTTONDOWN:
-		for i, pos in enumerate(spotsList):
-			x1,y1 = pos
+def mouseClick(events, x, y, flags, params):
+    if events == cv2.EVENT_LBUTTONDOWN:
+        spotsList.append((x, y))
 
-			if x1 < x < x1+width and y1 < y < y1+height:
-				spotsList.pop(i)
+    if events == cv2.EVENT_RBUTTONDOWN:
+        for i, pos in enumerate(spotsList):
+            x1, y1 = pos
+            if x1 < x < x1 + width and y1 < y < y1 + height:
+                spotsList.pop(i)
 
-	# Save the updated list to file
-	with open(file_path_fix_spots, 'wb') as f:
-		pickle.dump(spotsList, f)
+    # Save the updated spots list
+    with open(spots_path, 'wb') as f:
+        pickle.dump(spotsList, f)
 
-# Main loop: display image and handle clicks
+
 while True:
+    img = cv2.imread(img_path)
+    if img is None:
+        print("Failed to load image.")
+        break
 
-	img = cv2.imread(file_path_fix_empty)
+    for pos in spotsList:
+        cv2.rectangle(img, pos, (pos[0] + width, pos[1] + height), (255, 0, 255), 2)
 
-	for pos in spotsList:
-		cv2.rectangle(img, pos, (pos[0] + width, pos[1] + height), (255, 0, 255), 2)
-
-	#cv2.rectangle(img,(90,800),(150,900),(255,0,255),2)
-	cv2.imshow("image",img)
-	cv2.setMouseCallback("image", mouseClick)
-	cv2.waitKey(1)
-
-	if cv2.getWindowProperty("image", cv2.WND_PROP_VISIBLE) < 1:
-		print("Closing Window!")
-		break
-
-cv2.destroyAllWindows()
-
-# Launch next processing script
-nextPyScript = os.path.join(script_dir_fix, "parkingCheck.py")
-subprocess.run(["python", nextPyScript])
+    cv2.imshow("image", img)
+    cv2.setMouseCallback("image", mouseClick)
+    cv2.waitKey(1)
