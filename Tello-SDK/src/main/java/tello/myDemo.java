@@ -29,18 +29,16 @@ public class myDemo extends JFrame
     private JFrame frame;
     private final Logger logger = Logger.getGlobal();
     private TelloCamera camera;
-    private JLabel videoLabel = new JLabel(); // NEW: label to show video frames
-    private JFrame mapFrame;
+    private JFrame mapFrame; // frame for the map panel
     private movementMap mapPanel;
 
-    public void execute() 
-    {
-        //KILLING MYSELF
+    public void execute() {
+        // Create the main frame for the GUI
         frame = new JFrame("Pilot Controls");
         frame.setSize(960, 720); // fits the videoLabel nicely
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        //FUUUUUUUUUUUCK
+        // Create buttons for the GUI
         JButton rise = new JButton("Rise");
         JButton lower = new JButton("Lower");
         JButton land = new JButton("Land");
@@ -50,15 +48,15 @@ public class myDemo extends JFrame
         JButton left = new JButton("Left");
         JButton picture = new JButton("Picture");
 
-        // when the map uh... the uhhhh...
-        mapPanel = new movementMap();
-        mapFrame = new JFrame("Drone Tracker");
-        mapFrame.setSize(500, 500);
-        mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        mapFrame.add(mapPanel);
-        mapFrame.pack();
-        mapFrame.setVisible(true);
-        System.out.println("map init");
+         // Create a map panel and frame for the map
+         mapPanel = new movementMap();
+         mapFrame = new JFrame("Drone Tracker");
+         mapFrame.setSize(500, 500);
+         mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+         mapFrame.add(mapPanel);
+         mapFrame.pack();
+         mapFrame.setVisible(true);
+         System.out.println("map init");
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
 
@@ -110,19 +108,24 @@ public class myDemo extends JFrame
                     Socket clientSocket = serverSocket.accept(); 
                     System.out.println("Python client connected!");
 
-                    // Creates a stream to send image data through the socket to the python client
+                    // waits until DroneVideoViewer connects
+                    Socket clientSocket = serverSocket.accept();
+                    System.out.println("Client connected!");
+
+                    // sets up a stream to send data to DroneVideoViewer
                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 
-                    // This continuously takes video frames and send them to the Python client
+                    // Loop that continously sending video frames
                     while (true) {
-                        Mat frameMat = camera.getImage(); // Gets the current frame from the drone camera
-                        if (frameMat != null && !frameMat.empty()) {
-                            // Encode the frame into JPEG format and turns it into a byte array
+                        
+                        Mat frameToRead = camera.getImage();
+                        if (frameToRead != null) {
+                            
                             MatOfByte buffer = new MatOfByte();
                             Imgcodecs.imencode(".jpg", frameMat, buffer);
                             byte[] byteArray = buffer.toArray();
 
-                            // Send the length of the byte array and the data itself
+                            
                             out.writeInt(byteArray.length);
                             out.write(byteArray);
 
@@ -133,8 +136,8 @@ public class myDemo extends JFrame
                                 videoLabel.setIcon(new ImageIcon(image));
                             }
                         }
-
-                        Thread.sleep(100); // This delay is to reduce CPU usage
+                        // Sleep for 100ms to help CPU
+                        Thread.sleep(100);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -146,14 +149,14 @@ public class myDemo extends JFrame
         } finally {
             if (telloControl.getConnection() == TelloConnection.CONNECTED && drone.isFlying()) {
                 try {
-                    telloControl.land();
+                    //clean up
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        //RISE MY GLORIOUS CREATION
+        
         rise.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) { telloControl.up(50); }
@@ -161,7 +164,7 @@ public class myDemo extends JFrame
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
 
-        //KEEP YOUR HEAD DOWN, LOWER
+        
         lower.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) { telloControl.down(50); }
@@ -169,13 +172,13 @@ public class myDemo extends JFrame
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
 
-        //GET BACK HERE AND LAND
+        
         land.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) { telloControl.land(); }
         });
 
-        //FORWARD FOR THE HUNT
+        
         forward.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) { telloControl.forward(50); mapPanel.moveUp(); }
@@ -183,7 +186,7 @@ public class myDemo extends JFrame
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
 
-        //BACK UP THAT ASS
+        
         back.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) { telloControl.backward(50); mapPanel.moveDown(); }
@@ -191,7 +194,7 @@ public class myDemo extends JFrame
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
 
-        //SWIPE LEFT UGLY BITCH
+        
         left.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) { telloControl.left(50); mapPanel.moveLeft(); }
@@ -199,7 +202,7 @@ public class myDemo extends JFrame
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
 
-        //SWIPE RIGHT ON MOMMY
+        
         right.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) { telloControl.right(50); mapPanel.moveRight(); }
@@ -207,7 +210,7 @@ public class myDemo extends JFrame
             public void mouseReleased(MouseEvent e) { telloControl.stop(); }
         });
 
-        //Big image gaming?????
+        
         picture.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) 
@@ -217,11 +220,11 @@ public class myDemo extends JFrame
                 pb.directory(new File(System.getProperty("user.dir")));
                 pb.inheritIO();
                 try {
-                    pb.start();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
+					Process process = pb.start();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }; 
         });
 
         logger.info("end");
