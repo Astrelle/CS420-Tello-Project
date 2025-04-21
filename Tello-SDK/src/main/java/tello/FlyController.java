@@ -12,6 +12,10 @@ import tellolib.communication.TelloConnection;
 import tellolib.control.TelloControl;
 import tellolib.drone.TelloDrone;
 
+/**
+ * FlyController maps gamepad inputs to Tello drone commands,
+ * handling takeoff, landing, motion, flips, and media capture.
+ */
 public class FlyController
 {
 	private final Logger logger = Logger.getGlobal(); 
@@ -20,25 +24,28 @@ public class FlyController
 	private TelloDrone			drone;
 	private TelloCamera			camera;
 	private ControllerManager	controllers;
-
+   
+    /**
+     * Main execution loop: initializes controller, connects to drone,
+     * and processes gamepad events until landing.
+     * @throws Exception on initialization or communication error
+     */
 	public void execute() throws Exception
 	{
 		int		leftX, leftY, rightX, rightY, deadZone = 10;
 
 		logger.info("start");
 
-	    // Create game pad class from the Jamepad library included in this project.
-	    // The class supports multiple controllers.
-	    
+		// Initialize gamepad manager (supports multiple controllers).
 	    controllers = new ControllerManager();
 		controllers.initSDLGamepad();
     	
+	    // Verify presence of first controller.
     	ControllerState currState = controllers.getState(0);
-    	  
-    	// No controller, no fly!
     	
     	if (!currState.isConnected) throw new Exception("controller not connected");
 
+		// Acquire singleton instances for drone control, status, and video.
 	    telloControl = TelloControl.getInstance();
 	    
 	    drone = TelloDrone.getInstance();
@@ -167,8 +174,12 @@ public class FlyController
 	    logger.info("end");
 	}
 	
-	// Apply a dead zone to the input. Input below min value forced to zero.
-	
+    /**
+     * Zeroes small stick values to account for joystick imperfections.
+     * @param value axis value scaled to [-100,100]
+     * @param threshold minimum magnitude to register
+     * @return adjusted axis value
+     */
 	private int deadZone(int value, int minValue)
 	{
 		if (Math.abs(value) < minValue) value = 0;
@@ -176,10 +187,10 @@ public class FlyController
 		return value;
 	}	
 	
-	// Return a string of info for the status area on video feed.
-	// Drone won't respond to controller until Rdy = True, meaning
-	// that takeoff is complete.
-	
+    /**
+     * Constructs status overlay text for live video feed.
+     * @return formatted battery, altitude, heading, and flight status
+     */
 	private String updateWindow()
 	{
     	 return String.format("Batt: %d  Alt: %d  Hdg: %d  Rdy: %b", drone.getBattery(), drone.getHeight(), 

@@ -3,6 +3,9 @@ package tello;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * JPanel showing a red dot that smoothly moves to target coordinates.
+ */
 public class movementMap extends JPanel {
 
     private static final int sizeX = 500;
@@ -15,6 +18,9 @@ public class movementMap extends JPanel {
 
     private Timer animationtimer;
 
+    /**
+     * Initializes panel size and starts animation timer.
+     */
     public movementMap() {
         setPreferredSize(new Dimension(sizeX, sizeY));
         animationtimer = new Timer(30, e -> stepanimation());
@@ -29,6 +35,9 @@ public class movementMap extends JPanel {
         //System.out.println("building map");
     }
 
+    /**
+     * Moves the dot up to 2px toward target each tick; repaints if moved.
+     */
     private void stepanimation() {
         int speed = 2;
         boolean move = false;
@@ -53,7 +62,8 @@ public class movementMap extends JPanel {
             repaint();
         }
     }
-
+    
+    // Move target by 20px, clamped to panel bounds
     public void moveUp() {
         movey = Math.max(0, movey - 20);
     }
