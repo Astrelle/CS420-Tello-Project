@@ -102,11 +102,9 @@ public class myDemo extends JFrame
             // Socket thread for video streaming
             new Thread(() -> {
                 try {
-                    // Create a server socket that waits for a Python client to connect on port 9997
-                    ServerSocket serverSocket = new ServerSocket(9997); 
-                    System.out.println("Waiting for Python client on port 9997...");
-                    Socket clientSocket = serverSocket.accept(); 
-                    System.out.println("Python client connected!");
+                    // Creates a socket server that listens for connections on port 9999
+                    ServerSocket serverSocket = new ServerSocket(9999);
+                    System.out.println("Waiting for client connection on port 9999...");
 
                     // waits until DroneVideoViewer connects
                     Socket clientSocket = serverSocket.accept();
@@ -128,13 +126,6 @@ public class myDemo extends JFrame
                             
                             out.writeInt(byteArray.length);
                             out.write(byteArray);
-
-                            // Convert the current OpenCV frame to a BufferedImage and display it in the GUI
-                            BufferedImage image = matToBufferedImage(frameMat);
-                            // Updates the live feed
-                            if (image != null) {
-                                videoLabel.setIcon(new ImageIcon(image));
-                            }
                         }
                         // Sleep for 100ms to help CPU
                         Thread.sleep(100);
